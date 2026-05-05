@@ -1,0 +1,28 @@
+# cronwatch configuration schema example
+# Copy this file to /etc/cronwatch/config.yaml and adjust as needed.
+
+log_file: /var/log/cronwatch.log
+state_dir: /var/lib/cronwatch
+check_interval_seconds: 30
+
+# Optional SMTP settings for email alerts
+# smtp_host: smtp.example.com
+# smtp_port: 587
+# smtp_from: cronwatch@example.com
+
+jobs:
+  - name: nightly_backup
+    schedule: "0 2 * * *"       # cron expression
+    max_duration_seconds: 7200  # alert if job runs longer than 2 hours
+    alert_on_drift_seconds: 120 # alert if job starts more than 2 min late
+    notify:
+      - ops@example.com
+    enabled: true
+
+  - name: hourly_sync
+    schedule: "0 * * * *"
+    max_duration_seconds: 300
+    alert_on_drift_seconds: 30
+    notify:
+      - dev@example.com
+    enabled: true
