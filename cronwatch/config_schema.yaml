@@ -1,28 +1,32 @@
-# cronwatch configuration schema example
-# Copy this file to /etc/cronwatch/config.yaml and adjust as needed.
-
-log_file: /var/log/cronwatch.log
-state_dir: /var/lib/cronwatch
-check_interval_seconds: 30
-
-# Optional SMTP settings for email alerts
-# smtp_host: smtp.example.com
-# smtp_port: 587
-# smtp_from: cronwatch@example.com
+# cronwatch configuration schema (reference)
+#
+# Top-level keys
+# --------------
+# jobs        – list of monitored cron jobs (required)
+# smtp        – SMTP alerting configuration (optional)
+# webhooks    – list of HTTP webhook endpoints (optional)
 
 jobs:
-  - name: nightly_backup
-    schedule: "0 2 * * *"       # cron expression
-    max_duration_seconds: 7200  # alert if job runs longer than 2 hours
-    alert_on_drift_seconds: 120 # alert if job starts more than 2 min late
-    notify:
-      - ops@example.com
-    enabled: true
+  - name: string            # unique job identifier (required)
+    schedule: string        # cron expression, e.g. "0 3 * * *" (required)
+    max_duration: integer   # seconds; alert if runtime exceeds this (optional)
+    drift_threshold: integer # seconds; alert if start drifts beyond this (optional)
+    contact: string         # email address for per-job overrides (optional)
 
-  - name: hourly_sync
-    schedule: "0 * * * *"
-    max_duration_seconds: 300
-    alert_on_drift_seconds: 30
-    notify:
-      - dev@example.com
-    enabled: true
+smtp:
+  host: string              # SMTP server hostname
+  port: integer             # default 587
+  username: string
+  password: string
+  from_addr: string
+  to_addrs:                 # list of recipient addresses
+    - string
+  use_tls: boolean          # default true
+
+webhooks:
+  - url: string             # HTTP(S) endpoint (required)
+    method: string          # default POST
+    slack_format: boolean   # wrap in Slack {"text":...} envelope; default false
+    timeout: integer        # seconds; default 10
+    headers:                # optional extra HTTP headers
+      string: string
