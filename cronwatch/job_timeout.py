@@ -61,3 +61,16 @@ class TimeoutChecker:
         )
         log.warning(event.message)
         self._alerter.send(event)
+
+    def check_all(self, configs: list[JobConfig]) -> None:
+        """Run :meth:`check_job` for every config in *configs*.
+
+        Convenience method so callers don't need to loop manually.
+        Errors raised by individual checks are logged and skipped so that a
+        single bad config does not prevent the remaining jobs from being checked.
+        """
+        for cfg in configs:
+            try:
+                self.check_job(cfg)
+            except Exception:  # noqa: BLE001
+                log.exception("Unexpected error while checking timeout for job '%s'", cfg.name)
