@@ -79,3 +79,22 @@ def test_defaults_applied(tmp_path):
     job = cfg.jobs[0]
     assert job.max_duration_seconds == 3600
     assert job.enabled is True
+
+
+def test_multiple_jobs_loaded(tmp_path):
+    """Verify that multiple job entries are all parsed and returned."""
+    yaml_content = textwrap.dedent("""
+        jobs:
+          - name: job_one
+            schedule: '0 * * * *'
+          - name: job_two
+            schedule: '30 * * * *'
+          - name: job_three
+            schedule: '*/15 * * * *'
+    """)
+    p = tmp_path / "config.yaml"
+    p.write_text(yaml_content)
+    cfg = load_config(str(p))
+    assert len(cfg.jobs) == 3
+    job_names = [job.name for job in cfg.jobs]
+    assert job_names == ["job_one", "job_two", "job_three"]
