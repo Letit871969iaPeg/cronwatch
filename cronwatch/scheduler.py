@@ -30,6 +30,7 @@ class Scheduler:
         self._checker = DriftChecker(tracker, alerter)
         self._stop_event = threading.Event()
         self._thread: Optional[threading.Thread] = None
+        self._last_tick: Optional[float] = None
 
     def _run(self) -> None:
         logger.info("Scheduler started (interval=%ds)", self.interval)
@@ -39,6 +40,7 @@ class Scheduler:
         logger.info("Scheduler stopped")
 
     def _tick(self) -> None:
+        self._last_tick = time.monotonic()
         logger.debug("Running drift checks for %d jobs", len(self.config.jobs))
         for job_cfg in self.config.jobs:
             try:
@@ -64,3 +66,10 @@ class Scheduler:
     @property
     def is_running(self) -> bool:
         return self._thread is not None and self._thread.is_alive()
+
+    @property
+    def seconds_since_last_tick(self) -> Optional[float]:
+        """Return the number of seconds elapsed since the last tick, or None if no tick has occurred."""
+        if self._last_tick is None:
+            return None
+        return time.monotonic() - self._last_tick
